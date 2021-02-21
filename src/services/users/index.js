@@ -12,12 +12,16 @@ userRoutes.get('/auth/google',
 userRoutes.get('/auth/google/callback', 
   passport.authenticate('google', { failureRedirect: '/login' }),
   async function(req, res) {
-      console.log(req.user) 
-      const {accessToken, refreshToken} = req.user.tokens
-      res.cookie('accessToken',accessToken,{httpOnly:true,expires:'3600000'})
-      res.cookie('refreshToken',refreshToken,{httpOnly:true,expires:'86400000'})
+      try
+   {   console.log(req.user) 
+      const {accessToken, refrehToken} = req.user.tokens
+      res.cookie('accessToken',accessToken,{httpOnly:true})
+      res.cookie('refreshToken',refrehToken,{httpOnly:true})
     // Successful authentication, redirect home.
-    res.redirect('/');
+    res.redirect('http://localhost:3000');} catch(err){
+        console.log(err)
+        next(err)
+    }
   });
 
   userRoutes.get('/me', isAuthorized,async(req,res,next)=>{
@@ -45,8 +49,8 @@ const tokens = generateTokens(user)
 //set the new refresh token in the database
 user.refreshToken = tokens.refreshToken
 //send the cookies
-res.cookie('accessToken',tokens.accessToken,{httpOnly:true,expires:'3600000'})
-res.cookie('refreshToken',tokens.refreshToken,{httpOnly:true,expires:'86400000'})
+res.cookie('accessToken',tokens.accessToken,{httpOnly:true})
+res.cookie('refreshToken',tokens.refreshToken,{httpOnly:true})
 
 
       } catch(err){
@@ -55,5 +59,17 @@ res.cookie('refreshToken',tokens.refreshToken,{httpOnly:true,expires:'86400000'}
           next(error)
       }
   })
+
+  userRoutes.get('/auth/logout',async(req,res,next)=>{
+    try{
+        console.log('clearcookies')
+        res.clearCookie('accessToken',{httpOnly:true})
+        res.clearCookie('refreshToken',{httpOnly:true})
+        res.redirect('http://localhost:3000')
+
+} catch(err){
+        console.log(err)
+    }
+})
 
 module.exports = userRoutes
